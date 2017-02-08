@@ -1,0 +1,68 @@
+library(data.table)
+
+#set parameters----------
+dataPath = 'data/'
+dataName = "20170205"
+dateThresh = as.POSIXct("2000-12-06 00:00:00")
+progressThresh = 90
+
+
+#import raw data----------------
+fileName = paste0(dataName, ".csv")
+rawData = fread(paste0(dataPath, fileName))
+#delete one row
+rawData = rawData[2:nrow(rawData),]
+#replace string
+colNames = unlist(rawData[1,])
+colNames = gsub("\\{\"\"ImportId\"\":\"\"", "", colNames)
+colNames = gsub("\"\"\\}", "", colNames)
+#set column names
+setnames(rawData, 1:ncol(rawData), colNames)
+#delete one row
+rawData = rawData[2:nrow(rawData),]
+
+rawData[, startDate:=as.POSIXct(startDate)]
+rawData[, endDate:=as.POSIXct(endDate)]
+rawData = rawData[startDate>dateThresh,]
+
+rawData[, progress:=as.integer(progress)]
+rawData = rawData[progress>progressThresh,]
+
+
+#sbj table----------
+sbj = rawData[, c(1:9, 621), with = FALSE]
+setnames(sbj, 9, 'sbjId')
+setnames(sbj, 10, 'random')
+
+sbj[, sbjId:=as.factor(sbjId)]
+sbj[, progress:=as.integer(progress)]
+sbj[, duration:=as.integer(duration)]
+
+setkey(sbj, sbjId)
+
+
+#trial table---------
+trial = rawData[, c(9, 20:619), with = FALSE]
+setnames(trial, 1, 'sbjId')
+trial = melt(trial, 'sbjId', variable.name = 'qId')
+trial[, order:=strtoi(substr(qId, 1, regexpr('_', qId)-1))]
+trial[, value:=as.numeric(value)]
+#get variable names
+qIdTable = data.table(qId = c('QID3', 'QID4', 'QID5', 'QID9', 'QID10', 'QID11'),
+                      variable = rep(c('stimulus', 'response', 'time'),2),
+                      run = c(1,1,1,2,2,2))
+for(i in 1:nrow(qIdTable)){
+  trial[grep(qIdTable$qId[i], qId), 
+        c('variable', 'run'):=.(qIdTable$variable[i], qIdTable$run[i])]
+}
+trial = dcast(trial[!is.na(variable),], sbjId+run+order~variable, value.var = 'value')
+
+trial[, sbjId:=as.factor(sbjId)]
+trial[, run:=as.factor(run)]
+
+
+setkey(trial, sbjId, run, order)
+
+save(trial, sbj, 
+     file = paste(dataPath, paste0(dataName, '.RData'), sep = ''))
+
