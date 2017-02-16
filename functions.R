@@ -61,3 +61,18 @@ PrepareRawData = function (inputPathToFolder, outputPathToFolder, dataName,
        file = paste(outputPathToFolder, paste0(dataName, '.RData'), sep = ''))
   
 }
+
+OrientDiff = function(a, b){
+  diff = a-b
+  diff = diff %% 180
+  inds = which(diff>90)
+  diff[inds] = diff[inds] - 180
+  return(diff)
+}
+
+GetOrientation = function(angle){
+  orientation = angle %% 180
+  inds = which(orientation>90)
+  orientation[inds] = orientation[inds] - 180
+  return(orientation)
+}

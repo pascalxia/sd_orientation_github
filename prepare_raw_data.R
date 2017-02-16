@@ -1,7 +1,7 @@
 if(!exists("PrepareRawData", mode="function")) source("functions.R")
 
 # Set parameters----------------------
-dataPath = 'data/'
+dataPath = '~/Desktop/URAP/sd_orientation_github/data/'
 dateThresh = as.POSIXct("2000-12-06 00:00:00")
 progressThresh = 90
 
