@@ -53,19 +53,19 @@ readEditAndWrite = function (inputPathToFolder, outputPathToFolder, dataName,
   setkey(trial, sbjId, run, order)
   
   save(trial, subjectData, 
-       file = paste(outputPathToFolder, paste0(dataName, '_full.RData'), sep = ''))
+       file = paste(outputPathToFolder, paste0(dataName, '.RData'), sep = ''))
   
 }
 
 # Set parameters.
-dataPath = '~/Desktop/URAP/sd_orientation_github/data/'
-dataName = "20161206"
+dataPath = 'data/'
+dataName = "exp2_20170208"
 dateThresh = as.POSIXct("2000-12-06 00:00:00")
 
-qIdTable = data.table(qId = c('QID22', 'QID3', 'QID4', 'QID5', 'QID24', 
-                              'QID23', 'QID9', 'QID10', 'QID11', 'QID25'),
-                      variable = rep(c('direction', 'stimulus', 'response', 'stimulusOverTime', 'responseGivenTime'),2),
-                      run = c(1,1,1,1,1,2,2,2,2,2))
+qIdTable = data.table(qId = c('QID18', 'QID8', 'QID7', 'QID3', 'QID4', 'QID5', 'QID25', 
+                              'QID19', 'QID11', 'QID12', 'QID13', 'QID14', 'QID15', 'QID29'),
+                      variable = rep(c('miss', 'countdown', 'direction', 'stimulus', 'response', 'stimulusOverTime', 'responseGivenTime'),2),
+                      run = c(1,1,1,1,1,1,1,2,2,2,2,2,2,2))
 
 # Invoke Function.
 readEditAndWrite(inputPathToFolder = dataPath, outputPathToFolder = dataPath,
