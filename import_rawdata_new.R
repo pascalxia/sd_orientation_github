@@ -5,7 +5,8 @@ library(data.table)
 # thresholds (defaulted to null if not passed in).
 
 readEditAndWrite = function (inputPathToFolder, outputPathToFolder, dataName, 
-                             qIdTable, lowerThresh = NULL, upperThresh = NULL) {
+                             qIdTable, lowerThresh = NULL, upperThresh = NULL, 
+                             progressThresh = NULL) {
   rawData = fread(paste(inputPathToFolder, paste0(dataName, ".csv"), sep = ''))
   rawData = rawData[2:nrow(rawData),]
   
@@ -17,20 +18,23 @@ readEditAndWrite = function (inputPathToFolder, outputPathToFolder, dataName,
   rawData = rawData[2:nrow(rawData),]
   rawData[, startDate:=as.POSIXct(startDate)]
   rawData[, endDate:=as.POSIXct(endDate)]
+  rawData[, progress:=as.integer(progress)]
+  
   if (!is.null(lowerThresh)) {
     rawData = rawData[startDate > lowerThresh, ]
   }
   if (!is.null(upperThresh)) {
     rawData = rawData[startDate < upperThresh, ]
   }
-  
+  if(!is.null(progressThresh)){
+    rawData = rawData[progress > progressThresh,]
+  }
   
   subjectData = rawData[, c(1:9, ncol(rawData)), with = FALSE]
   setnames(subjectData, 9, 'sbjId')
   setnames(subjectData, 10, 'random')
   
   subjectData[, sbjId:=as.factor(sbjId)]
-  subjectData[, progress:=as.integer(progress)]
   subjectData[, duration:=as.integer(duration)]
   setkey(subjectData, sbjId)
   
@@ -61,6 +65,7 @@ readEditAndWrite = function (inputPathToFolder, outputPathToFolder, dataName,
 dataPath = 'data/'
 dataName = "exp2_20170208"
 dateThresh = as.POSIXct("2000-12-06 00:00:00")
+progressThresh = 90
 
 qIdTable = data.table(qId = c('QID18', 'QID8', 'QID7', 'QID3', 'QID4', 'QID5', 'QID25', 
                               'QID19', 'QID11', 'QID12', 'QID13', 'QID14', 'QID15', 'QID29'),
@@ -69,4 +74,5 @@ qIdTable = data.table(qId = c('QID18', 'QID8', 'QID7', 'QID3', 'QID4', 'QID5', '
 
 # Invoke Function.
 readEditAndWrite(inputPathToFolder = dataPath, outputPathToFolder = dataPath,
-                qIdTable = qIdTable, dataName = dataName, lowerThresh = dateThresh)
+                qIdTable = qIdTable, dataName = dataName, lowerThresh = dateThresh,
+                progressThresh = progressThresh)
