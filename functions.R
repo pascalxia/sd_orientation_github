@@ -4,7 +4,7 @@ library(data.table)
 # name of the csv file (without extension), qID table, lower and upper startdate 
 # thresholds (defaulted to null if not passed in).
 
-readEditAndWrite = function (inputPathToFolder, outputPathToFolder, dataName, 
+PrepareRawData = function (inputPathToFolder, outputPathToFolder, dataName, 
                              qIdTable, lowerThresh = NULL, upperThresh = NULL, 
                              progressThresh = NULL) {
   rawData = fread(paste(inputPathToFolder, paste0(dataName, ".csv"), sep = ''))
@@ -30,13 +30,13 @@ readEditAndWrite = function (inputPathToFolder, outputPathToFolder, dataName,
     rawData = rawData[progress > progressThresh,]
   }
   
-  subjectData = rawData[, c(1:9, ncol(rawData)), with = FALSE]
-  setnames(subjectData, 9, 'sbjId')
-  setnames(subjectData, 10, 'random')
+  sbj = rawData[, c(1:9, ncol(rawData)), with = FALSE]
+  setnames(sbj, 9, 'sbjId')
+  setnames(sbj, 10, 'random')
   
-  subjectData[, sbjId:=as.factor(sbjId)]
-  subjectData[, duration:=as.integer(duration)]
-  setkey(subjectData, sbjId)
+  sbj[, sbjId:=as.factor(sbjId)]
+  sbj[, duration:=as.integer(duration)]
+  setkey(sbj, sbjId)
   
   
   trial = rawData[, c(9, 20:ncol(rawData) - 3), with = FALSE]
@@ -52,27 +52,12 @@ readEditAndWrite = function (inputPathToFolder, outputPathToFolder, dataName,
   
   trial[, sbjId:=as.factor(sbjId)]
   trial[, run:=as.factor(run)]
-  trial[, direction:=as.factor(direction)]
+  if(!is.null(trial$direction))
+    trial[, direction:=as.factor(direction)]
   
   setkey(trial, sbjId, run, order)
   
-  save(trial, subjectData, 
+  save(trial, sbj, 
        file = paste(outputPathToFolder, paste0(dataName, '.RData'), sep = ''))
   
 }
-
-# Set parameters.
-dataPath = 'data/'
-dataName = "exp2_20170208"
-dateThresh = as.POSIXct("2000-12-06 00:00:00")
-progressThresh = 90
-
-qIdTable = data.table(qId = c('QID18', 'QID8', 'QID7', 'QID3', 'QID4', 'QID5', 'QID25', 
-                              'QID19', 'QID11', 'QID12', 'QID13', 'QID14', 'QID15', 'QID29'),
-                      variable = rep(c('miss', 'countdown', 'direction', 'stimulus', 'response', 'stimulusOverTime', 'responseGivenTime'),2),
-                      run = c(1,1,1,1,1,1,1,2,2,2,2,2,2,2))
-
-# Invoke Function.
-readEditAndWrite(inputPathToFolder = dataPath, outputPathToFolder = dataPath,
-                qIdTable = qIdTable, dataName = dataName, lowerThresh = dateThresh,
-                progressThresh = progressThresh)
