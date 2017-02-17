@@ -1,7 +1,7 @@
 if(!exists("PrepareRawData", mode="function")) source("functions.R")
 
 # Set parameters----------------------
-dataPath = 'data/'
+dataPath = '~/Desktop/URAP/sd_orientation_github/data/'
 
 
 #prepare data of experiment 2-------------------
