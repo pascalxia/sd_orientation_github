@@ -37,3 +37,7 @@ trial[, responseGivenTime:=NA]
 
 sbjAll = rbind(sbjAll, sbj)
 trialAll = rbind(trialAll, trial)
+
+#change data type---------
+sbjAll[, exp:=factor(exp)]
+trialAll[, exp:=factor(exp)]
