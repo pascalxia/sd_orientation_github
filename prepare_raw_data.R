@@ -6,7 +6,7 @@ dateThresh = as.POSIXct("2000-12-06 00:00:00")
 progressThresh = 90
 
 
-#prepare data of experiment 2-------------------
+#prepare old data of experiment 2-------------------
 dataName = "exp2_20170208"
 
 qIdTable = data.table(qId = c('QID18', 'QID8', 'QID7', 'QID3', 'QID4', 'QID5', 'QID25', 
@@ -17,6 +17,19 @@ qIdTable = data.table(qId = c('QID18', 'QID8', 'QID7', 'QID3', 'QID4', 'QID5', '
 PrepareRawData(inputPathToFolder = dataPath, outputPathToFolder = dataPath,
                  qIdTable = qIdTable, dataName = dataName, lowerThresh = dateThresh,
                  progressThresh = progressThresh)
+
+#prepare new data of experiment 2-------------------
+dataName = "exp2_20170222"
+
+qIdTable = data.table(qId = c('QID18', 'QID8', 'QID7', 'QID3', 'QID4', 'QID5', 'QID25', 
+                              'QID19', 'QID11', 'QID12', 'QID13', 'QID14', 'QID15', 'QID29'),
+                      variable = rep(c('miss', 'countdown', 'direction', 'stimulus', 'response', 'stimulusOverTime', 'responseGivenTime'),2),
+                      run = c(1,1,1,1,1,1,1,2,2,2,2,2,2,2))
+
+dateThresh = as.POSIXct("2017-01-01 00:00:00")
+PrepareRawData(inputPathToFolder = dataPath, outputPathToFolder = dataPath,
+               qIdTable = qIdTable, dataName = dataName, lowerThresh = dateThresh,
+               progressThresh = progressThresh)
 
 
 #prepare data of experiment 3-------------------------

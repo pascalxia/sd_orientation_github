@@ -4,13 +4,21 @@ if(!exists("PrepareRawData", mode="function")) source("functions.R")
 dataPath = '~/Desktop/URAP/sd_orientation_github/data/'
 
 
-#prepare data of experiment 2-------------------
+#prepare data of experiment 2 old-------------------
 dataName = "exp2_20170208"
 load(paste0(dataPath, dataName, ".RData"))
 sbj[, exp:="exp2"]
 trial[, exp:="exp2"]
 sbjAll = sbj
 trialAll = trial
+
+#prepare data of experiment 2 new-------------------
+dataName = "exp2_20170222"
+load(paste0(dataPath, dataName, ".RData"))
+sbj[, exp:="exp2"]
+trial[, exp:="exp2"]
+sbjAll = rbind(sbjAll, sbj)
+trialAll = rbind(trialAll, trial)
 
 
 #prepare data of experiment 3-------------------------
