@@ -11,9 +11,12 @@ sd(trial$error, na.rm = TRUE)/length(trial$error)^0.5
 
 # x axis - 3 experiments. y axis - mean errors. 95% confidence interval bars too.
 
-standard_errors = c(sd(trial[trial$exp == "exp2",]$error, na.rm = TRUE)/length(trial[trial$exp == "exp2",]$error)^0.5, 
-                    sd(trial[trial$exp == "exp3",]$error, na.rm = TRUE)/length(trial[trial$exp == "exp3",]$error)^0.5, 
-                    sd(trial[trial$exp == "exp4",]$error, na.rm = TRUE)/length(trial[trial$exp == "exp4",]$error)^0.5)
+standard_errors = c(sd(trial[trial$exp == "exp2",]$error, 
+                       na.rm = TRUE)/length(trial[trial$exp == "exp2",]$error)^0.5, 
+                    sd(trial[trial$exp == "exp3",]$error, 
+                       na.rm = TRUE)/length(trial[trial$exp == "exp3",]$error)^0.5, 
+                    sd(trial[trial$exp == "exp4",]$error, 
+                       na.rm = TRUE)/length(trial[trial$exp == "exp4",]$error)^0.5)
 
 means = c(mean(trial[trial$exp == "exp2",]$error, na.rm = TRUE), 
           mean(trial[trial$exp == "exp3",]$error, na.rm = TRUE), 
@@ -45,19 +48,23 @@ ggplot(summary, aes(x=exp, y=m, fill = run)) +
                 position=position_dodge(.9))
 
 
-summaryOrientation = trial[!is.na(error), .(or = GetOrientation(stimulus), error, exp = factor(exp), run, id = sbjId)]
+summaryOrientation = trial[!is.na(error), .(or = GetOrientation(stimulus), 
+                                            error, exp = factor(exp), run, id = sbjId)]
 
 # Trends accross experiments
 
-ggplot(summaryOrientation, aes(x = or, y = error, color = exp)) + geom_point(alpha = 0.2) + geom_smooth() + facet_grid(.~run)
+ggplot(summaryOrientation, aes(x = or, y = error, color = exp)) + 
+  geom_point(alpha = 0.2) + geom_smooth() + facet_grid(.~run)
 
 # Hist of stimulus orientation/angle
 
-ggplot(summaryOrientation, aes(x = or)) + geom_histogram(colour = "black", fill = "white", binwidth = 5)
+ggplot(summaryOrientation, aes(x = or)) + 
+  geom_histogram(colour = "black", fill = "white", binwidth = 5)
 
 # Compare each subject to the average trend (facet_wrap(~subjectId))
 
-ggplot(summaryOrientation, aes(x = or, y = error, colour = run)) + geom_point(alpha = 0.2) + geom_smooth() + facet_wrap(~id)
+ggplot(summaryOrientation, aes(x = or, y = error, colour = run)) + 
+  geom_point(alpha = 0.2) + geom_smooth() + facet_wrap(~id)
 
 # Create Table of old and new Exp2
 
@@ -82,19 +89,18 @@ trial2 = rbind(trial2, trial)
 sbj2[, exp:=factor(exp)]
 trial2[, exp:=factor(exp)]
 
-# 1. p-val for run bias for exp2old, exp2new, exp2old - exp2new
+# 1. p-val for run bias for exp2old, exp2new
 
 trial2[, error := OrientDiff(stimulus, response)]
 
-summaryOrientation2 = trial2[!is.na(error), .(or = GetOrientation(stimulus), error, exp = factor(exp), run, id = sbjId, re = GetOrientation(response))]
+summaryOrientation2 = trial2[!is.na(error), .(or = GetOrientation(stimulus), error, 
+                                              exp = factor(exp), run, id = sbjId, 
+                                              re = GetOrientation(response))]
 
-ggplot(summaryOrientation2, aes(x = or, y = error, color = exp)) + geom_point(alpha = 0.2) + geom_smooth() + facet_grid(.~run)
+ggplot(summaryOrientation2, aes(x = or, y = error, color = exp)) + geom_point(alpha = 0.2) + 
+  geom_smooth() + facet_grid(.~run)
 
 
-
-linearModelOld = lm(or ~ re, data = summaryOrientation2[summaryOrientation2$exp == "exp2_old",])
-
-linearModelNew = lm(or ~ re, data = summaryOrientation2[summaryOrientation2$exp == "exp2_new",])
 
 modelOld = lm(error~run, data=summaryOrientation2[summaryOrientation2$exp == "exp2_old",])
 summary(modelOld)
@@ -104,14 +110,19 @@ summary(modelNew)
 
 summary2 = trial2[!is.na(error), .(m = mean(error), se = sd(error)/sqrt(.N)), by = .(exp, run)]
 
+
+# Error bars for old and new exp2 data by run.
+
 ggplot(summary2, aes(x=exp, y=m, fill = run)) + 
   geom_bar(position=position_dodge(), stat="identity") +
   geom_errorbar(aes(ymin=m-2*se, ymax=m+2*se),
                 width=.2,                    # Width of the error bars
                 position=position_dodge(.9))
 
+# Error bars for new exp data by subject id and run.
 
-summary3 = trial2[exp == "exp2_new", ][!is.na(error), .(m = mean(error), se = sd(error)/sqrt(.N)), by = .(sbjId, run)]
+summary3 = trial2[exp == "exp2_new" & !is.na(error), 
+                  .(m = mean(error), se = sd(error)/sqrt(.N)), by = .(sbjId, run)]
 
 
 ggplot(summary3, aes(x=sbjId, y=m, fill = run)) + 
@@ -121,8 +132,62 @@ ggplot(summary3, aes(x=sbjId, y=m, fill = run)) +
                 position=position_dodge(.9))
 
 
-ggplot(summaryOrientation2[exp == "exp2_new" & abs(error)<30,], aes(x = or, y = error, colour = run)) + geom_point(alpha = 0.2) + geom_smooth() + facet_wrap(~id)
+ggplot(summaryOrientation2[exp == "exp2_new" & abs(error)<30,], 
+       aes(x = or, y = error, colour = run)) + 
+  geom_point(alpha = 0.2) + geom_smooth() + facet_wrap(~id)
+
+# Check Interval of Response versus Error Rates
+
+trial2[, interval:=c(NA, (stimulusOverTime[-1] - stimulusOverTime[-.N])/1000), by = .(sbjId, run)]
+trial2[, responseInterval:=(responseGivenTime - stimulusOverTime)/1000, by = .(sbjId, run)]
+
+# Interval Distributions
+
+ggplot(trial2, aes(x=interval)) +
+  geom_histogram() +
+  facet_wrap(~sbjId, scales="free_x")
+ggplot(trial2[interval<20], aes(x=interval)) +
+  geom_histogram() +
+  facet_wrap(~sbjId, scales="free_x")
+
+ggplot(trial2, aes(x=responseInterval)) +
+  geom_histogram() +
+  facet_wrap(~sbjId, scales="free_x")
+ggplot(trial2[responseInterval<10], aes(x=responseInterval)) +
+  geom_histogram() +
+  facet_wrap(~sbjId, scales="free_x")
+
+# Plots to show that smaller Response Intervals correspond to larger errors
+ggplot(trial2[error > 30,], aes(y = responseInterval, x = error)) + 
+  geom_point(alpha = 0.2) + geom_smooth() + facet_grid(sbjId~.)
+
+ggplot(trial2[error <= 30,], aes(y = responseInterval, x = error)) + 
+  geom_point(alpha = 0.2) + geom_smooth() + facet_grid(sbjId~.)
 
 
+# Error Bars for new exp2 data without quick responses
+
+responseThresh = 3
+
+summary3 = trial2[exp == "exp2_new" & !is.na(error) & responseInterval > responseThresh, 
+                  .(m = mean(error), se = sd(error)/sqrt(.N)), by = .(sbjId, run)]
+
+
+ggplot(summary3, aes(x=sbjId, y=m, fill = run)) + 
+  geom_bar(position=position_dodge(), stat="identity") +
+  geom_errorbar(aes(ymin=m-2*se, ymax=m+2*se),
+                width=.2,                    # Width of the error bars
+                position=position_dodge(.9))
+
+# Error vs Orientation for new exp2 data without quick responses
+
+summaryOrientation2 = trial2[!is.na(error) & responseInterval > responseThresh, 
+                             .(or = GetOrientation(stimulus), error, 
+                                              exp = factor(exp), run, id = sbjId, 
+                                              re = GetOrientation(response), responseInterval)]
+
+ggplot(summaryOrientation2[exp == "exp2_new",], 
+       aes(x = or, y = error, colour = run)) + 
+  geom_point(alpha = 0.2) + geom_smooth() + facet_wrap(~id)
 
 
